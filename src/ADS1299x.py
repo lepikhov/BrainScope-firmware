@@ -5,7 +5,11 @@ from config import RING_BUFFER_SIZE
 
 class ADS1299x:
 
+    WAKEUP = 0x02
+    STANDBY = 0x04
+    RESET = 0x06
     START = 0x08
+    STOP = 0x0A
     RDATAC = 0x10
 
 

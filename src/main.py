@@ -16,22 +16,44 @@ def get_gain(chan):
     g = (CHnSET[chan] & 0x70) >> 4
     return gains[g]
 
-    
+
+sleep = True    
 
 def demo():
     ble = bluetooth.BLE()
     brain = BLEBrain(ble)
-    bd= BrainData()
+    bd = BrainData()
+    
+    
 
     def on_rx(v):
         print("RX", v)
 
-    brain.on_write(on_rx)        
+    def on_connect():
+        bd.wakeup()
+        global sleep   
+        sleep = False     
+
+    def on_disconnect():
+        bd.sleep()   
+        global sleep
+        sleep = True     
+
+    brain.on_write(on_rx)    
+
+    brain.on_connect(on_connect)    
+
+    brain.on_disconnect(on_disconnect)      
 
     cnt = 0
 
     while True:
-         
+
+        time.sleep_ms(1000)         
+        
+        if sleep:
+            continue
+
         data = [0x1, cnt, 0, 0, 0, 0, 
                 0x2, cnt, 0, 0, 0, 0,
                 0x3, cnt, 0, 0, 0, 0,
@@ -42,8 +64,8 @@ def demo():
                 0x8, cnt, 0, 0, 0, 0,
                 ]
         #tdata = bd.getData()
-        #tdata = bd.getDataAverage()
-        tdata = bd.getTestData()
+        tdata = bd.getDataAverage()
+        #tdata = bd.getTestData()
         
         for i in range(0, 32, 4):
             u_tmp = int.from_bytes(tdata[i//4], 'little', True)
@@ -61,9 +83,9 @@ def demo():
         except:
             print("An exception occurred")
 
+        if not (cnt % 5):
+            print(data)
 
-
-        time.sleep_ms(1000)
 
 
 if __name__ == "__main__":

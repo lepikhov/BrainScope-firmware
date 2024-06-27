@@ -47,6 +47,10 @@ class BLEBrain:
         self._connections = set()
         #self._rx_buffer = bytearray()        
         self._write_callback = None
+
+        self._connect_callback = None
+        self._disconnect_callback = None
+
         self._payload = advertising_payload(
             name=name, appearance=_ADV_APPEARANCE_GENERIC_COMPUTER
         )
@@ -60,10 +64,14 @@ class BLEBrain:
             conn_handle, _, _, = data
             print("New connection", conn_handle)
             self._connections.add(conn_handle)
+            if self._connect_callback:
+                self._connect_callback()
         elif event == _IRQ_CENTRAL_DISCONNECT:
             conn_handle, _, _, = data
             print("Disconnected", conn_handle)
             self._connections.remove(conn_handle)
+            if self._disconnect_callback:
+                self._disconnect_callback()
             # Start advertising again to allow a new connection.
             self._advertise()
         elif event == _IRQ_GATTS_WRITE:
@@ -91,3 +99,9 @@ class BLEBrain:
 
     def on_write(self, callback):
         self._write_callback = callback  
+
+    def on_connect(self, callback):
+        self._connect_callback = callback    
+
+    def on_disconnect(self, callback):
+        self._disconnect_callback = callback              

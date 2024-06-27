@@ -16,13 +16,18 @@ class BrainData:
 
         self.__adc=ADS1299x()
 
-        self.__adc.command(0x06)
-        self.__adc.command(0x10)
-        self.__adc.command(0x08)
+        self.start()
+
+
+    def start(self):
+        self.__adc.command(self.__adc.RESET) 
+        self.__adc.command(self.__adc.RDATAC) 
+        self.__adc.command(self.__adc.START)
 
         self.__adc.wreg(0x15, 1, bytearray([0x20]))
-
         self.__adc.wreg(0x5, 8, bytearray(CHnSET))
+
+        self.__adc.command(self.__adc.STANDBY)         
 
 
     def __point(self, x):
@@ -70,7 +75,15 @@ class BrainData:
                 data.append(tmp.to_bytes(4, 'little'))
             else:
                 data.append(bytearray([0, 0, 0, 0]))                
-        return data        
+        return data   
+
+    def sleep(self):
+        print('sleep' ) 
+        self.__adc.command(self.__adc.STANDBY)    
+
+    def wakeup(self):
+        print('wake up' )         
+        self.__adc.command(self.__adc.WAKEUP)
 
 def demo():
     bd=BrainData()
